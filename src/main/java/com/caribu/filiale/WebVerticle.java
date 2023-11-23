@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import com.caribu.filiale.controller.OperatorController;
 import com.caribu.filiale.model.Operator;
-import com.caribu.filiale.model.OperatorDTO;
 import com.caribu.filiale.service.OperatorServiceImpl;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.JoinConfig;
@@ -29,11 +28,6 @@ import com.caribu.filiale.service.OperatorService;
 
 import java.util.Properties;
 
-/* TODO 
- * Aggiungi: - Hazel
- *           - Controller (handler)
- *           - Service <-> Repository
-*/
 public class WebVerticle extends AbstractVerticle {
   private static final Logger LOG = LoggerFactory.getLogger(WebVerticle.class);
   private final OperatorService operatorService;
