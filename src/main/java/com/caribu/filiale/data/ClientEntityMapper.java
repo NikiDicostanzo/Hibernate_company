@@ -13,7 +13,6 @@ public class ClientEntityMapper implements Function<ClientDTO, Client> {
     client.setId(clientDTO.getId());
     client.setClientId(clientDTO.getClientId());
     client.setCompanyName(clientDTO.getCompanyName());
-
     return client;
   }
 }

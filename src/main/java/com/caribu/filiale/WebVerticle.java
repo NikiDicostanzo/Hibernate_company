@@ -3,10 +3,13 @@ package com.caribu.filiale;
 import io.vertx.core.*;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.openapi.RouterBuilder;
 import io.vertx.ext.web.validation.ValidationHandler;
+import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 import org.hibernate.cfg.Configuration;
 import org.hibernate.reactive.provider.ReactiveServiceRegistryBuilder;
@@ -19,6 +22,9 @@ import com.caribu.filiale.controller.OperatorController;
 import com.caribu.filiale.model.Operator;
 import com.caribu.filiale.model.OperatorDTO;
 import com.caribu.filiale.service.OperatorServiceImpl;
+import com.hazelcast.config.Config;
+import com.hazelcast.config.JoinConfig;
+import com.hazelcast.config.NetworkConfig;
 import com.caribu.filiale.service.OperatorService;
 
 import java.util.Properties;
@@ -60,7 +66,8 @@ public class WebVerticle extends AbstractVerticle {
                   startPromise.fail(ar.cause());
                 }
               });
-        });
+          });
+        
   }
 
   public static void main(String[] args) {
@@ -85,23 +92,50 @@ public class WebVerticle extends AbstractVerticle {
     // 3. Project repository
     OperatorService operatorService = new OperatorServiceImpl(sessionFactory);
 
-    // 5. WebVerticle
-    WebVerticle verticle = new WebVerticle(operatorService);
 
-    DeploymentOptions options = new DeploymentOptions();
-    JsonObject config = new JsonObject();
-    config.put("port", 8888);
-    options.setConfig(config);
+    // Configure clustering
+    Config hazelcastConfig = new Config();
+    hazelcastConfig.getNetworkConfig().setPort(6000) // Set the initial port for clustering
+              .setPortAutoIncrement(true);
 
-    Vertx vertx = Vertx.vertx();
-    vertx.deployVerticle(verticle, options).onFailure(res -> {
-      System.out.println(res);
-      System.out.println("ERROR");
-    })
-        .onSuccess(res -> {
-          System.out.println(res);
-          System.out.println("Application is up and running");
-        });
+    NetworkConfig networkConfig = hazelcastConfig.getNetworkConfig();
+
+    // Network configurations for discovery over TCP/IP instead of multicast
+    JoinConfig joinConfig = networkConfig.getJoin();
+    joinConfig.getMulticastConfig().setEnabled(false);
+    joinConfig.getTcpIpConfig().setEnabled(true).addMember("127.0.0.1");
+    // some configuration settings
+    ClusterManager mgr = new HazelcastClusterManager(hazelcastConfig);
+    VertxOptions options = new VertxOptions().setClusterManager(mgr);
+
+    // Deploy verticle
+    Vertx
+      .clusteredVertx(options, cluster -> {
+       if (cluster.succeeded()) {
+           cluster.result().deployVerticle(new WebVerticle(operatorService), res -> {
+              if (res.succeeded()) {
+                   System.out.println("Application is up and running");
+                   LOG.info("Deployment id is: " + res.result());
+               } else {
+                   LOG.error("Deployment failed!");
+               }
+           });
+       } else {
+           LOG.error("Cluster up failed: " + cluster.cause());
+       }
+    });
   }
 
+  private void failureHandler(RoutingContext errorContext) {
+        
+        if (errorContext.response().ended()) {
+          // Ignore completed response
+          LOG.info("------");
+          return;
+        }
+        LOG.info("Route Error:", errorContext.failure());
+        errorContext.response()
+          .setStatusCode(500)
+          .end(new JsonObject().put("message: Something went wrong, path: ", errorContext.normalizedPath()).toString());
+    }
 }
