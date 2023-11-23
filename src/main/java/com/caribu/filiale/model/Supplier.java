@@ -9,43 +9,31 @@ public class Supplier {
     @Id
     @GeneratedValue
     private Integer id;
-    private Integer userId; //
-    
-    public Integer getUserId() {
-        return userId;
+    private Integer supplierId;
+    private String companyName;
+
+    public Integer getSupplierId() {
+        return supplierId;
     }
-    public void setUserId(Integer userId) {
-        this.userId = userId;
-    }
-    private String name;
-    private String surname;//
-    private String date;
-    
-    
+
+    public void setSupplierId(Integer userId) {
+        this.supplierId = userId;
+    }    
+
     public Integer getId() {
         return id;
     }
+
     public void setId(Integer id) {
         this.id = id;
     }
-    public String getName() {
-        return name;
+
+    public String getCompanyName() {
+        return companyName;
     }
-    public void setName(String name) {
-        this.name = name;
+
+    public void setCompanyName(String name) {
+        this.companyName = name;
     }
-    public String getSurname() {
-        return surname;
-    }
-    public void setSurname(String surname) {
-        this.surname = surname;
-    }
-    public String getDate() {
-        return date;
-    }
-    public void setDate(String date) {
-        this.date = date;
-    }
- 
 
 }

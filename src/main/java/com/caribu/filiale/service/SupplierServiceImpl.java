@@ -1,44 +1,42 @@
 package com.caribu.filiale.service;
 
 import io.vertx.core.Future;
-import com.caribu.filiale.data.SupplierRepository;
+import org.hibernate.reactive.stage.Stage;
 
+import com.caribu.filiale.data.SupplierEntityMapper;
+import com.caribu.filiale.data.SupplierDTOMapper;
 import com.caribu.filiale.model.Supplier;
 import com.caribu.filiale.model.SupplierDTO;
-import com.caribu.filiale.model.SupplierList;
 
+import javax.persistence.criteria.*;
 import java.util.Optional;
+import java.util.concurrent.CompletionStage;
 
 public class SupplierServiceImpl implements SupplierService {
 
-  private SupplierRepository repository;
+  private Stage.SessionFactory sessionFactory;
 
-  public SupplierServiceImpl(SupplierRepository repository) {
-    this.repository = repository;
+  public SupplierServiceImpl(Stage.SessionFactory sessionFactory) {
+    this.sessionFactory = sessionFactory;
   }
 
   @Override
   public Future<SupplierDTO> createSupplier(SupplierDTO supplier) {
-    return repository.createSupplier(supplier);
+    SupplierEntityMapper entityMapper = new SupplierEntityMapper();
+    Supplier entity = entityMapper.apply(supplier);
+    CompletionStage<Void> result = sessionFactory.withTransaction((s, t) -> s.persist(entity));
+    SupplierDTOMapper dtoMapper = new SupplierDTOMapper();
+    Future<SupplierDTO> future = Future.fromCompletionStage(result).map(v -> dtoMapper.apply(entity));
+    return future;
   }
-
-  // @Override
-  // public Future<SupplierDTO> updateSupplier(SupplierDTO supplier) {
-  // return repository.updateSupplier(supplier);
-  // }
 
   @Override
   public Future<Optional<SupplierDTO>> findSupplierById(Integer id) {
-    return repository.findSupplierById(id);
+    SupplierDTOMapper dtoMapper = new SupplierDTOMapper();
+    CompletionStage<Supplier> result = sessionFactory.withTransaction((s, t) -> s.find(Supplier.class, id));
+    Future<Optional<SupplierDTO>> future = Future.fromCompletionStage(result)
+        .map(r -> Optional.ofNullable(r))
+        .map(r -> r.map(dtoMapper));
+    return future;
   }
-
-  // @Override
-  // public Future<Void> removeSupplier(Integer id) {
-  // return repository.removeSupplier(id);
-  // }
-
-  // @Override
-  // public Future<SuppliersList> findSuppliersByUser(Integer userId) {
-  // return repository.findSuppliersByUser(userId);
-  // }
 }

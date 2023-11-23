@@ -5,7 +5,7 @@ import com.caribu.filiale.model.OperatorDTO;
 
 import java.util.function.Function;
 
-class OperatorEntityMapper implements Function<OperatorDTO, Operator> {
+public class OperatorEntityMapper implements Function<OperatorDTO, Operator> {
   
   @Override
   public Operator apply(OperatorDTO operatorDTO) {
@@ -14,7 +14,6 @@ class OperatorEntityMapper implements Function<OperatorDTO, Operator> {
     operator.setUserId(operatorDTO.getUserId());
     operator.setName(operatorDTO.getName());
     operator.setSurname(operatorDTO.getSurname());
-    operator.setDate(operatorDTO.getDate());
     
     return operator;
   }

@@ -1,44 +1,70 @@
 package com.caribu.filiale.service;
 
 import io.vertx.core.Future;
+import org.hibernate.reactive.stage.Stage;
 
-import com.caribu.filiale.data.ClientRepository;
+import com.caribu.filiale.data.ClientEntityMapper;
+import com.caribu.filiale.data.ClientDTOMapper;
+import com.caribu.filiale.model.Client;
 import com.caribu.filiale.model.ClientDTO;
-import com.caribu.filiale.model.ClientList;
 
+import javax.persistence.criteria.*;
 import java.util.Optional;
+import java.util.concurrent.CompletionStage;
 
+public class ClientServiceImpl implements ClientService{
 
-public class ClientServiceImpl implements ClientService {
+  private Stage.SessionFactory sessionFactory;
 
-  private ClientRepository repository;
-
-  public ClientServiceImpl(ClientRepository repository) {
-    this.repository = repository;
+  public ClientServiceImpl(Stage.SessionFactory sessionFactory) {
+    this.sessionFactory = sessionFactory;
   }
 
   @Override
-  public Future<ClientDTO> createClient(ClientDTO clientDTO) {
-    return repository.createClient(clientDTO);
+  public Future<ClientDTO> createClient(ClientDTO client) {
+    ClientEntityMapper entityMapper = new ClientEntityMapper();
+    Client entity = entityMapper.apply(client);
+    CompletionStage<Void> result = sessionFactory.withTransaction((s, t) -> s.persist(entity));
+    ClientDTOMapper dtoMapper = new ClientDTOMapper();
+    Future<ClientDTO> future = Future.fromCompletionStage(result).map(v -> dtoMapper.apply(entity));
+    return future;
   }
 
   // @Override
-  // public Future<ClientDTO> updateClient(ClientDTO clientDTO) {
-  //   return repository.updateClient(clientDTO);
+  // public Future<Void> removeTask(Integer id) {
+  //   CriteriaBuilder criteriaBuilder = sessionFactory.getCriteriaBuilder();
+  //   CriteriaDelete<Task> criteriaDelete = criteriaBuilder.createCriteriaDelete(Task.class);
+  //   Root<Task> root = criteriaDelete.from(Task.class);
+  //   Predicate predicate = criteriaBuilder.equal(root.get("id"), id);
+  //   criteriaDelete.where(predicate);
+
+  //   CompletionStage<Integer> result = sessionFactory.withTransaction((s,t) -> s.createQuery(criteriaDelete).executeUpdate());
+  //   Future<Void> future = Future.fromCompletionStage(result).compose(r -> Future.succeededFuture());
+  //   return future;
   // }
 
   @Override
   public Future<Optional<ClientDTO>> findClientById(Integer id) {
-    return repository.findClientById(id);
+    ClientDTOMapper dtoMapper = new ClientDTOMapper();
+    CompletionStage<Client> result = sessionFactory.withTransaction((s,t) -> s.find(Client.class, id));
+    Future<Optional<ClientDTO>> future = Future.fromCompletionStage(result)
+      .map(r -> Optional.ofNullable(r))
+      .map(r -> r.map(dtoMapper));
+    return future;
   }
 
-  //   @Override
-  //   public Future<Void> removeClient(Integer id) {
-  //     return repository.removeClient(id);
-  //   }
-
-  //   @Override
-  //   public Future<ClientsList> findClientsByUser(Integer userId) {
-  //     return repository.findClientsByUser(userId);
-  //   }
+  // @Override
+  // public Future<TasksList> findTasksByUser(Integer userId) {
+  //   TaskDTOMapper dtoMapper = new TaskDTOMapper();
+  //   CriteriaBuilder criteriaBuilder = sessionFactory.getCriteriaBuilder();
+  //   CriteriaQuery<Task> criteriaQuery = criteriaBuilder.createQuery(Task.class);
+  //   Root<Task> root = criteriaQuery.from(Task.class);
+  //   Predicate predicate = criteriaBuilder.equal(root.get("userId"), userId);
+  //   criteriaQuery.where(predicate);
+  //   CompletionStage<List<Task>> result = sessionFactory().withTransaction((s,t) -> s.createQuery(criteriaQuery).getResultList());
+  //   Future<TasksList> future = Future.fromCompletionStage(result)
+  //     .map(list -> list.stream().map(dtoMapper).collect(Collectors.toList()))
+  //     .map(list -> new TasksList(list));
+  //   return future;
+  // }
 }

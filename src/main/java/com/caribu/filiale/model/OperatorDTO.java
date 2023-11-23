@@ -1,11 +1,11 @@
 package com.caribu.filiale.model;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
 
 public class OperatorDTO {
     private Integer id;
     private Integer userId;
+    private String name;
+    private String surname;
     
     public Integer getUserId() {
         return userId;
@@ -14,17 +14,13 @@ public class OperatorDTO {
         this.userId = userId;
     }
 
-    private String name;
-    private String surname;
-    private String date;
-
-    public OperatorDTO(Integer id, Integer userId, String name, String surname, String date) {
+    public OperatorDTO(Integer id, Integer userId, String name, String surname) {
         this.id = id;
         this.userId = userId;
         this.name = name;
         this.surname = surname;
-        this.date = date;
     }
+
     public Integer getId() {
         return id;
     }
@@ -49,15 +45,4 @@ public class OperatorDTO {
         this.surname = surname;
     }
 
-    public String getDate() {
-        return date;
-    }
-
-    public void setDate(String date) {
-        this.date = date;
-    }
-
-  
-
-    // getters and setters
 }

@@ -2,6 +2,7 @@ package com.caribu.filiale.data;
 
 import com.caribu.filiale.model.Operator;
 import com.caribu.filiale.model.OperatorDTO;
+import com.caribu.filiale.service.OperatorServiceImpl;
 
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Vertx;
@@ -37,7 +38,7 @@ class OperatorRepositoryImplTest {
     .withUsername(DB_USER)
     .withPassword(DB_PASSWORD);
 
-  OperatorRepositoryImpl repository;
+  OperatorServiceImpl repository;
 
   @BeforeEach
   void setup(Vertx vertx, VertxTestContext context){
@@ -58,7 +59,7 @@ class OperatorRepositoryImplTest {
       .applySettings(hibernateConfiguration.getProperties()).build();
     Stage.SessionFactory sessionFactory = hibernateConfiguration
       .buildSessionFactory(serviceRegistry).unwrap(Stage.SessionFactory.class);
-    repository = new OperatorRepositoryImpl(sessionFactory);
+    repository = new OperatorServiceImpl(sessionFactory);
     context.completeNow();
   }
 

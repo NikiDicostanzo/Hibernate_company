@@ -1,30 +1,24 @@
 package com.caribu.filiale.model;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-
 public class SupplierDTO {
     private Integer id;
-    private Integer userId;
-    
-    public Integer getUserId() {
-        return userId;
-    }
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    private Integer supplierId;
+    private String companyName;
+
+    public Integer getSupplierId() {
+        return supplierId;
     }
 
-    private String name;
-    private String surname;
-    private String date;
+    public void setSupplierId(Integer supplierId) {
+        this.supplierId = supplierId;
+    }    
 
-    public SupplierDTO(Integer id, Integer userId, String name, String surname, String date) {
+    public SupplierDTO(Integer id, Integer userId, String companyName) {
         this.id = id;
-        this.userId = userId;
-        this.name = name;
-        this.surname = surname;
-        this.date = date;
+        this.supplierId = userId;
+        this.companyName = companyName;
     }
+
     public Integer getId() {
         return id;
     }
@@ -33,31 +27,11 @@ public class SupplierDTO {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getCompanyName() {
+        return companyName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setCompanyName(String name) {
+        this.companyName = name;
     }
-
-    public String getSurname() {
-        return surname;
-    }
-
-    public void setSurname(String surname) {
-        this.surname = surname;
-    }
-
-    public String getDate() {
-        return date;
-    }
-
-    public void setDate(String date) {
-        this.date = date;
-    }
-
-  
-
-    // getters and setters
 }

@@ -1,22 +1,16 @@
 package com.caribu.filiale.service;
 
-import xyz.yurimednikov.hibernate.model.ProjectDTO;
 import io.vertx.core.Future;
-import xyz.yurimednikov.hibernate.model.ProjectsList;
-
-import java.util.Optional;
-
 import com.caribu.filiale.model.ClientDTO;
+import java.util.Optional;
 
 public interface ClientService {
 
-  Future<ClientDTO> createClient (ClientDTO projectDTO);
+  Future<ClientDTO> createClient (ClientDTO client);
 
-  //Future<ClientDTO> updateClient(ClientDTO projectDTO);
+  // Future<Void> removeTask (Integer id);
 
   Future<Optional<ClientDTO>> findClientById (Integer id);
 
-  //Future<Void> removeClient (Integer id);
-
-  //Future<ClientsList> findClientsByUser (Integer userId);
+  // Future<TasksList> findTasksByUser (Integer userId);
 }

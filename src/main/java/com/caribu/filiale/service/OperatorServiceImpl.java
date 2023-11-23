@@ -1,68 +1,90 @@
 package com.caribu.filiale.service;
 
 import io.vertx.core.Future;
+import org.hibernate.reactive.stage.Stage;
 
+import com.caribu.filiale.data.OperatorEntityMapper;
+import com.caribu.filiale.data.OperatorDTOMapper;
 import com.caribu.filiale.model.Operator;
 import com.caribu.filiale.model.OperatorDTO;
 import com.caribu.filiale.model.OperatorList;
 
-import com.caribu.filiale.data.OperatorRepository;
-
-import java.util.Objects;
+import javax.persistence.criteria.*;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 
+public class OperatorServiceImpl implements OperatorService{//TODO SERVICE
 
-public class OperatorServiceImpl implements OperatorService{
+  private Stage.SessionFactory sessionFactory;
 
-  private OperatorRepository repository;
-
-  public OperatorServiceImpl(OperatorRepository repository) {
-    this.repository = repository;
+  public OperatorServiceImpl(Stage.SessionFactory sessionFactory) {
+    this.sessionFactory = sessionFactory;
   }
 
   @Override
-  public Future<OperatorDTO> createOperator(OperatorDTO operatorDTO) {
-    return repository.createOperator(operatorDTO);
+  public Future<OperatorDTO> createOperator(OperatorDTO operator) {
+    OperatorEntityMapper entityMapper = new OperatorEntityMapper();
+    Operator entity = entityMapper.apply(operator);
+    CompletionStage<Void> result = sessionFactory.withTransaction((s, t) -> s.persist(entity));
+    OperatorDTOMapper dtoMapper = new OperatorDTOMapper();
+    Future<OperatorDTO> future = Future.fromCompletionStage(result).map(v -> dtoMapper.apply(entity));
+    return future;
   }
 
   // @Override
-  // public Future<OperatorDTO> updateProject(Principal principal, OperatorDTO operatorDTO) {
-  //   Integer operatorId = operatorDTO.id();
-  //   return repository.findOperatorById(operatorId).compose(result -> {
-  //     if (result.isEmpty()) {
-  //       return Future.failedFuture(new RuntimeException());
-  //     }
-  //     OperatorDTO operator = result.get();
-  //     if (Objects.equals(operator.userId(), principal.userId())) {
-  //       return repository.updateProject(operatorDTO);
-  //     } else {
-  //       return Future.failedFuture(new NotOwnerException());
-  //     }
-  //   });
+  // public Future<TaskDTO> updateTask(TaskDTO task) {
+  //   CriteriaBuilder criteriaBuilder = sessionFactory.getCriteriaBuilder();
+  //   CriteriaUpdate<Task> criteriaUpdate = criteriaBuilder.createCriteriaUpdate(Task.class);
+  //   Root<Task> root = criteriaUpdate.from(Task.class);
+  //   Predicate predicate = criteriaBuilder.equal(root.get("id"), task.id());
+
+  //   criteriaUpdate.set("content", task.content());
+  //   criteriaUpdate.set("completed", task.completed());
+
+  //   criteriaUpdate.where(predicate);
+
+  //   CompletionStage<Integer> result = sessionFactory.withTransaction((s, t) -> s.createQuery(criteriaUpdate).executeUpdate());
+  //   Future<TaskDTO> future = Future.fromCompletionStage(result).map(r -> task);
+  //   return future;
+  // }
+
+  // @Override
+  // public Future<Void> removeTask(Integer id) {
+  //   CriteriaBuilder criteriaBuilder = sessionFactory.getCriteriaBuilder();
+  //   CriteriaDelete<Task> criteriaDelete = criteriaBuilder.createCriteriaDelete(Task.class);
+  //   Root<Task> root = criteriaDelete.from(Task.class);
+  //   Predicate predicate = criteriaBuilder.equal(root.get("id"), id);
+  //   criteriaDelete.where(predicate);
+
+  //   CompletionStage<Integer> result = sessionFactory.withTransaction((s,t) -> s.createQuery(criteriaDelete).executeUpdate());
+  //   Future<Void> future = Future.fromCompletionStage(result).compose(r -> Future.succeededFuture());
+  //   return future;
   // }
 
   @Override
   public Future<Optional<OperatorDTO>> findOperatorById(Integer id) {
-    return repository.findOperatorById(id);
+    OperatorDTOMapper dtoMapper = new OperatorDTOMapper();
+    CompletionStage<Operator> result = sessionFactory.withTransaction((s,t) -> s.find(Operator.class, id));
+    Future<Optional<OperatorDTO>> future = Future.fromCompletionStage(result)
+      .map(r -> Optional.ofNullable(r))
+      .map(r -> r.map(dtoMapper));
+    return future;
   }
 
   // @Override
-  // public Future<Void> removeProject(Principal principal, Integer id) {
-  //   return repository.findProjectById(id).compose(result -> {
-  //     if (result.isEmpty()) {
-  //       return Future.failedFuture(new RuntimeException());
-  //     }
-  //     ProjectDTO project = result.get();
-  //     if (Objects.equals(project.userId(), principal.userId())) {
-  //       return repository.removeProject(id);
-  //     } else {
-  //       return Future.failedFuture(new NotOwnerException());
-  //     }
-  //   });
-  // }
-
-  // @Override
-  // public Future<OperatorList> findOperatorsByUser(Integer userId) {
-  //   return repository.findOperatorsByUser(userId);
+  // public Future<TasksList> findTasksByUser(Integer userId) {
+  //   TaskDTOMapper dtoMapper = new TaskDTOMapper();
+  //   CriteriaBuilder criteriaBuilder = sessionFactory.getCriteriaBuilder();
+  //   CriteriaQuery<Task> criteriaQuery = criteriaBuilder.createQuery(Task.class);
+  //   Root<Task> root = criteriaQuery.from(Task.class);
+  //   Predicate predicate = criteriaBuilder.equal(root.get("userId"), userId);
+  //   criteriaQuery.where(predicate);
+  //   CompletionStage<List<Task>> result = sessionFactory().withTransaction((s,t) -> s.createQuery(criteriaQuery).getResultList());
+  //   Future<TasksList> future = Future.fromCompletionStage(result)
+  //     .map(list -> list.stream().map(dtoMapper).collect(Collectors.toList()))
+  //     .map(list -> new TasksList(list));
+  //   return future;
   // }
 }

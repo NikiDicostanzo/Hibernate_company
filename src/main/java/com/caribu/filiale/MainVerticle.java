@@ -27,11 +27,11 @@ public class MainVerticle extends AbstractVerticle {
   }
 
   private Future<String> deployRestApiVerticle(Promise<Void> startPromise) {
-    return vertx.deployVerticle(RestApiVerticle.class.getName(),
+    return vertx.deployVerticle(RestApiVerticle_deprec.class.getName(),
     new DeploymentOptions().setInstances(PROCESSORS))
       .onFailure(startPromise::fail)
       .onSuccess(id -> {
-        LOG.info("Deployed {} with id {}", RestApiVerticle.class.getSimpleName(), id);
+        LOG.info("Deployed {} with id {}", RestApiVerticle_deprec.class.getSimpleName(), id);
         startPromise.complete();
       });
   }

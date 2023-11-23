@@ -12,10 +12,10 @@ import org.hibernate.reactive.provider.ReactiveServiceRegistryBuilder;
 import org.hibernate.reactive.stage.Stage;
 import org.hibernate.service.ServiceRegistry;
 
-import com.caribu.filiale.data.OperatorRepository;
-import com.caribu.filiale.data.OperatorRepositoryImpl;
 import com.caribu.filiale.model.Operator;
 import com.caribu.filiale.model.OperatorDTO;
+import com.caribu.filiale.service.OperatorServiceImpl;
+import com.caribu.filiale.service.OperatorService;
 
 import java.util.HashMap;
 import java.util.Properties;
@@ -23,12 +23,17 @@ import java.util.Properties;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.validation.RequestParameters;
 
+/* TODO 
+ * Aggiungi: - Hazel
+ *           - Controller (handler)
+ *           - Service <-> Repository
+*/
 public class WebVerticle extends AbstractVerticle {
 
-  private final OperatorRepository operatorRepository;
+  private final OperatorService operatorService;
 
-  public WebVerticle(OperatorRepository operatorRepository) {
-    this.operatorRepository = operatorRepository; //TODO SERVICE
+  public WebVerticle(OperatorService operatorService) {
+    this.operatorService = operatorService; //TODO SERVICE
   }
   @Override
   public void start(Promise<Void> startPromise) throws Exception {
@@ -39,7 +44,7 @@ public class WebVerticle extends AbstractVerticle {
    
     router.get("/operator/:id").handler(context -> {
       Integer id = Integer.valueOf(context.pathParam("id"));
-      operatorRepository.findOperatorById(id) 
+      operatorService.findOperatorById(id) 
           .onSuccess(result -> {
           System.out.println("GET");
           if (result.isPresent()) {
@@ -64,11 +69,10 @@ public class WebVerticle extends AbstractVerticle {
       Integer userId = Integer.parseInt((json.getString("userid")));
       String name = (json.getString("name"));
       String surname = (json.getString("surname"));
-      String date = (json.getString("date"));
       System.err.println("context: " + context.body().asJsonObject());
      
-      OperatorDTO operator = new OperatorDTO(null, userId, name, surname, date);
-      operatorRepository.createOperator(operator)
+      OperatorDTO operator = new OperatorDTO(null, userId, name, surname);
+      operatorService.createOperator(operator)
           .onSuccess(result -> {
           JsonObject responseBody = JsonObject.mapFrom(result);
           context.response().setStatusCode(201).end(responseBody.encode());
@@ -104,17 +108,15 @@ public class WebVerticle extends AbstractVerticle {
       .buildSessionFactory(serviceRegistry).unwrap(Stage.SessionFactory.class);
 
     // 3. Project repository
-    OperatorRepository projectRepository = new OperatorRepositoryImpl(sessionFactory);
-
+    OperatorService operatorService = new OperatorServiceImpl(sessionFactory);
 
     // 5. WebVerticle
-    WebVerticle verticle = new WebVerticle(projectRepository);
+    WebVerticle verticle = new WebVerticle(operatorService);
 
     DeploymentOptions options = new DeploymentOptions();
     JsonObject config = new JsonObject();
     config.put("port", 8888);
     options.setConfig(config);
-
 
     Vertx vertx = Vertx.vertx();
     vertx.deployVerticle(verticle, options).onFailure(res -> {
@@ -126,6 +128,5 @@ public class WebVerticle extends AbstractVerticle {
         System.out.println("Application is up and running");
       });
   }
-
 
 }
