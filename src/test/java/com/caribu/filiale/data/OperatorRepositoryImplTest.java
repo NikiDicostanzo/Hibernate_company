@@ -34,14 +34,14 @@ class OperatorRepositoryImplTest {
 
   @Container
   PostgreSQLContainer container = new PostgreSQLContainer("postgres:13-alpine")
-    .withDatabaseName(DB_NAME)
-    .withUsername(DB_USER)
-    .withPassword(DB_PASSWORD);
+      .withDatabaseName(DB_NAME)
+      .withUsername(DB_USER)
+      .withPassword(DB_PASSWORD);
 
   OperatorServiceImpl repository;
 
   @BeforeEach
-  void setup(Vertx vertx, VertxTestContext context){
+  void setup(Vertx vertx, VertxTestContext context) {
     Properties hibernateProps = new Properties();
     String url = "jdbc:postgresql://localhost:" + Integer.toString(container.getFirstMappedPort()) + "/" + DB_NAME;
     hibernateProps.put("hibernate.connection.url", url);
@@ -50,121 +50,130 @@ class OperatorRepositoryImplTest {
     hibernateProps.put("javax.persistence.schema-generation.database.action", "create");
     hibernateProps.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQL95Dialect");
     hibernateProps.put("hibernate.generate_statistics", true);
-//    hibernateProps.put("hibernate.show_sql", true);
-//    hibernateProps.put("hibernate.format_sql", true);
+    // hibernateProps.put("hibernate.show_sql", true);
+    // hibernateProps.put("hibernate.format_sql", true);
     Configuration hibernateConfiguration = new Configuration();
     hibernateConfiguration.setProperties(hibernateProps);
     hibernateConfiguration.addAnnotatedClass(Operator.class);
     ServiceRegistry serviceRegistry = new ReactiveServiceRegistryBuilder()
-      .applySettings(hibernateConfiguration.getProperties()).build();
+        .applySettings(hibernateConfiguration.getProperties()).build();
     Stage.SessionFactory sessionFactory = hibernateConfiguration
-      .buildSessionFactory(serviceRegistry).unwrap(Stage.SessionFactory.class);
+        .buildSessionFactory(serviceRegistry).unwrap(Stage.SessionFactory.class);
     repository = new OperatorServiceImpl(sessionFactory);
     context.completeNow();
   }
 
   @Test
-  void createTaskTest(Vertx vertx, VertxTestContext context){
+  void createTaskTest(Vertx vertx, VertxTestContext context) {
     OperatorDTO operatorDTO = new OperatorDTO(null, 12314, "Pippo", "Rossi", "1-120-1230");
     context.verify(() -> {
-      repository.createOperator(operatorDTO)
-        .onFailure(err -> context.failNow(err))
-        .onSuccess(result -> {
-          Assertions.assertNotNull(result);
-          Assertions.assertNotNull(result.getId());
+      repository.addOperator(operatorDTO)
+          .onFailure(err -> context.failNow(err))
+          .onSuccess(result -> {
+            Assertions.assertNotNull(result);
+            Assertions.assertNotNull(result.getId());
             Assertions.assertEquals(1, result.getId());
-          System.out.print("OOOK");
-          context.completeNow();
-        });
+            System.out.print("OOOK");
+            context.completeNow();
+          });
     });
   }
 
   // @Test
   // void findTaskByIdDoesNotExistTest(Vertx vertx, VertxTestContext context){
-  //   context.verify(() -> {
-  //     repository.findTaskById(1)
-  //       .onSuccess(r -> {
-  //         Assertions.assertTrue(r.isEmpty());
-  //         context.completeNow();
-  //       })
-  //       .onFailure(err -> context.failNow(err));
-  //   });
+  // context.verify(() -> {
+  // repository.findTaskById(1)
+  // .onSuccess(r -> {
+  // Assertions.assertTrue(r.isEmpty());
+  // context.completeNow();
+  // })
+  // .onFailure(err -> context.failNow(err));
+  // });
   // }
 
   // @Test
   // void findTaskByIdExistsTest(Vertx vertx, VertxTestContext context){
-  //   TaskDTO taskDTO = new TaskDTO(null, 1, "My task", false, LocalDateTime.now(), Optional.empty());
-  //   context.verify(() -> {
-  //     repository.createTask(taskDTO)
-  //       .compose(r -> repository.findTaskById(r.id()))
-  //       .onFailure(err -> context.failNow(err))
-  //       .onSuccess(result -> {
-  //         Assertions.assertTrue(result.isPresent());
-  //         context.completeNow();
-  //       });
-  //   });
+  // TaskDTO taskDTO = new TaskDTO(null, 1, "My task", false, LocalDateTime.now(),
+  // Optional.empty());
+  // context.verify(() -> {
+  // repository.createTask(taskDTO)
+  // .compose(r -> repository.findTaskById(r.id()))
+  // .onFailure(err -> context.failNow(err))
+  // .onSuccess(result -> {
+  // Assertions.assertTrue(result.isPresent());
+  // context.completeNow();
+  // });
+  // });
   // }
 
   // @Test
   // void removeTaskTest(Vertx vertx, VertxTestContext context){
-  //   TaskDTO taskDTO = new TaskDTO(null, 1, "My task", false, LocalDateTime.now(), Optional.empty());
-  //   context.verify(() -> {
-  //     repository.createTask(taskDTO)
-  //       .compose(r -> {
-  //         Assertions.assertEquals(1, r.id());
-  //         return repository.removeTask(r.id());
-  //       }).compose(r -> repository.findTaskById(1))
-  //       .onFailure(err -> context.failNow(err))
-  //       .onSuccess(r -> {
-  //         Assertions.assertTrue(r.isEmpty());
-  //         context.completeNow();
-  //       });
-  //   });
+  // TaskDTO taskDTO = new TaskDTO(null, 1, "My task", false, LocalDateTime.now(),
+  // Optional.empty());
+  // context.verify(() -> {
+  // repository.createTask(taskDTO)
+  // .compose(r -> {
+  // Assertions.assertEquals(1, r.id());
+  // return repository.removeTask(r.id());
+  // }).compose(r -> repository.findTaskById(1))
+  // .onFailure(err -> context.failNow(err))
+  // .onSuccess(r -> {
+  // Assertions.assertTrue(r.isEmpty());
+  // context.completeNow();
+  // });
+  // });
   // }
 
   // @Test
   // void updateTaskTest(Vertx vertx, VertxTestContext context){
-  //   TaskDTO taskDTO = new TaskDTO(null, 1, "My task", false, LocalDateTime.now(), Optional.empty());
-  //   context.verify(() -> {
-  //     repository.createTask(taskDTO)
-  //       .compose(r -> {
-  //         Assertions.assertEquals(1, r.id());
-  //         TaskDTO updatedTask = new TaskDTO(1, r.userId(), "Updated content", true, r.createdAt(), Optional.empty());
-  //         return repository.updateTask(updatedTask);
-  //       }).compose(r -> {
-  //         Assertions.assertTrue(r.completed());
-  //         Assertions.assertEquals("Updated content", r.content());
-  //         return repository.findTaskById(1);
-  //       }).onFailure(err -> context.failNow(err))
-  //       .onSuccess(r ->{
-  //         Assertions.assertTrue(r.isPresent());
-  //         TaskDTO result = r.get();
-  //         Assertions.assertTrue(result.completed());
-  //         Assertions.assertEquals("Updated content", result.content());
-  //         context.completeNow();
-  //       });
-  //   });
+  // TaskDTO taskDTO = new TaskDTO(null, 1, "My task", false, LocalDateTime.now(),
+  // Optional.empty());
+  // context.verify(() -> {
+  // repository.createTask(taskDTO)
+  // .compose(r -> {
+  // Assertions.assertEquals(1, r.id());
+  // TaskDTO updatedTask = new TaskDTO(1, r.userId(), "Updated content", true,
+  // r.createdAt(), Optional.empty());
+  // return repository.updateTask(updatedTask);
+  // }).compose(r -> {
+  // Assertions.assertTrue(r.completed());
+  // Assertions.assertEquals("Updated content", r.content());
+  // return repository.findTaskById(1);
+  // }).onFailure(err -> context.failNow(err))
+  // .onSuccess(r ->{
+  // Assertions.assertTrue(r.isPresent());
+  // TaskDTO result = r.get();
+  // Assertions.assertTrue(result.completed());
+  // Assertions.assertEquals("Updated content", result.content());
+  // context.completeNow();
+  // });
+  // });
   // }
 
   // @Test
   // void findTasksByUserTest(Vertx vertx, VertxTestContext context){
-  //   TaskDTO task1 = new TaskDTO(null, 1, "My task", false, LocalDateTime.now(), Optional.empty());
-  //   TaskDTO task2 = new TaskDTO(null, 1, "My task", false, LocalDateTime.now(), Optional.empty());
-  //   TaskDTO task3 = new TaskDTO(null, 2, "My task", false, LocalDateTime.now(), Optional.empty());
-  //   CompositeFuture createTasks = CompositeFuture.join(repository.createTask(task1), repository.createTask(task2), repository.createTask(task3));
-  //   context.verify(() -> {
-  //     createTasks.compose(r -> {
-  //       Assertions.assertTrue(r.succeeded());
-  //       Assertions.assertTrue(r.isComplete());
-  //       System.out.println(r.list().get(0));
-  //       System.out.println(r.list().get(1));
-  //       System.out.println(r.list().get(2));
-  //       return repository.findTasksByUser(1);
-  //     }).onFailure(err -> context.failNow(err))
-  //       .onSuccess(r -> {
-  //         Assertions.assertEquals(2, r.tasks().size());
-  //         context.completeNow();
-  //       });
-  //   });
+  // TaskDTO task1 = new TaskDTO(null, 1, "My task", false, LocalDateTime.now(),
+  // Optional.empty());
+  // TaskDTO task2 = new TaskDTO(null, 1, "My task", false, LocalDateTime.now(),
+  // Optional.empty());
+  // TaskDTO task3 = new TaskDTO(null, 2, "My task", false, LocalDateTime.now(),
+  // Optional.empty());
+  // CompositeFuture createTasks =
+  // CompositeFuture.join(repository.createTask(task1),
+  // repository.createTask(task2), repository.createTask(task3));
+  // context.verify(() -> {
+  // createTasks.compose(r -> {
+  // Assertions.assertTrue(r.succeeded());
+  // Assertions.assertTrue(r.isComplete());
+  // System.out.println(r.list().get(0));
+  // System.out.println(r.list().get(1));
+  // System.out.println(r.list().get(2));
+  // return repository.findTasksByUser(1);
+  // }).onFailure(err -> context.failNow(err))
+  // .onSuccess(r -> {
+  // Assertions.assertEquals(2, r.tasks().size());
+  // context.completeNow();
+  // });
+  // });
   // }
 }

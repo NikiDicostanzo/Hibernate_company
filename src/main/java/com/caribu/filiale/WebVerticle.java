@@ -12,6 +12,7 @@ import org.hibernate.reactive.provider.ReactiveServiceRegistryBuilder;
 import org.hibernate.reactive.stage.Stage;
 import org.hibernate.service.ServiceRegistry;
 
+import com.caribu.filiale.controller.OperatorController;
 import com.caribu.filiale.model.Operator;
 import com.caribu.filiale.model.OperatorDTO;
 import com.caribu.filiale.service.OperatorServiceImpl;
@@ -31,61 +32,28 @@ import io.vertx.ext.web.validation.RequestParameters;
 public class WebVerticle extends AbstractVerticle {
 
   private final OperatorService operatorService;
+  private OperatorController operatorController;
 
   public WebVerticle(OperatorService operatorService) {
-    this.operatorService = operatorService; //TODO SERVICE
+    this.operatorService = operatorService; 
   }
+
   @Override
   public void start(Promise<Void> startPromise) throws Exception {
     HttpServer server = vertx.createHttpServer();
     Router router = Router.router(vertx);
 
+  //  operatorService = new OperatorService();
+    operatorController = new OperatorController(operatorService);
+
     router.route("/*").handler(BodyHandler.create());
-   
-    router.get("/operator/:id").handler(context -> {
-      Integer id = Integer.valueOf(context.pathParam("id"));
-      operatorService.findOperatorById(id) 
-          .onSuccess(result -> {
-          System.out.println("GET");
-          if (result.isPresent()) {
-            JsonObject body = JsonObject.mapFrom(result.get());
-            context.response().setStatusCode(200).end(body.encode());
-          } else {
-            context.response().setStatusCode(404).end();
-          }
-        })
-        .onFailure(err -> context.response().setStatusCode(500).end());
-    });
-
-          //          context.body().asJsonObject()!!!!
-    router.post("/operator").handler(context -> {
-      // RequestParameters params = context.get("id");//pathParam("accountId");//context.get(ValidationHandler.REQUEST_CONTEXT_KEY); // (1)
-      // JsonObject json = params.body().getJsonObject(); // (2)
-
-      JsonObject json = context.body().asJsonObject();
-
-      //"userid":"132123","name":"Mario","surname":null,"date":null
-      //Integer id = Integer.parseInt((json.getString("id")));
-      Integer userId = Integer.parseInt((json.getString("userid")));
-      String name = (json.getString("name"));
-      String surname = (json.getString("surname"));
-      System.err.println("context: " + context.body().asJsonObject());
-     
-      OperatorDTO operator = new OperatorDTO(null, userId, name, surname);
-      operatorService.createOperator(operator)
-          .onSuccess(result -> {
-          JsonObject responseBody = JsonObject.mapFrom(result);
-          context.response().setStatusCode(201).end(responseBody.encode());
-        })
-          .onFailure(err -> {
-            context.response().setStatusCode(500).end();
-            System.out.println("Error");});
-    });
+    router.get("/operator/:id").handler(ctx -> operatorController.getOperatorById(ctx));
+    router.post("/operator").handler(ctx -> operatorController.addOperator(ctx));
 
     JsonObject config = config();
     Integer port = config.getInteger("port");
     server.requestHandler(router).listen(port).onSuccess(result -> startPromise.complete())
-      .onFailure(err -> startPromise.fail(err));
+        .onFailure(err -> startPromise.fail(err));
   }
 
   public static void main(String[] args) {
@@ -103,9 +71,9 @@ public class WebVerticle extends AbstractVerticle {
 
     // 2. Session factroy
     ServiceRegistry serviceRegistry = new ReactiveServiceRegistryBuilder()
-      .applySettings(hibernateConfiguration.getProperties()).build();
+        .applySettings(hibernateConfiguration.getProperties()).build();
     Stage.SessionFactory sessionFactory = hibernateConfiguration
-      .buildSessionFactory(serviceRegistry).unwrap(Stage.SessionFactory.class);
+        .buildSessionFactory(serviceRegistry).unwrap(Stage.SessionFactory.class);
 
     // 3. Project repository
     OperatorService operatorService = new OperatorServiceImpl(sessionFactory);
@@ -123,10 +91,10 @@ public class WebVerticle extends AbstractVerticle {
       System.out.println(res);
       System.out.println("ERROR");
     })
-      .onSuccess(res -> {
-        System.out.println(res);
-        System.out.println("Application is up and running");
-      });
+        .onSuccess(res -> {
+          System.out.println(res);
+          System.out.println("Application is up and running");
+        });
   }
 
 }

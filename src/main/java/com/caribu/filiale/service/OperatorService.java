@@ -9,11 +9,11 @@ import java.util.Optional;
 
 public interface OperatorService {
 
-  Future<OperatorDTO> createOperator (OperatorDTO operator);
+  Future<OperatorDTO> addOperator(OperatorDTO operator);
 
   // Future<Void> removeTask (Integer id);
 
-  Future<Optional<OperatorDTO>> findOperatorById (Integer id);
+  Future<Optional<OperatorDTO>> getOperatorById(Integer id);
 
   // Future<TasksList> findTasksByUser (Integer userId);
 }
