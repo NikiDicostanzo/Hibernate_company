@@ -7,38 +7,25 @@ servers:
     description: My server
 
 paths:
-  /op/add:
+  /operator:
     post:
       summary: Add a new operator
-      operationId: AddOp
+      operationId: AddOperator
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Operator'
+              $ref: "#/components/schemas/Operator"
       responses:
-        '200':
+        "200":
           description: Operator added successfully
-        '400':
+        "400":
           description: Invalid input
-  /company/operator:
-    get:
-      summary: Get all operators
-      operationId: listOp
-      responses:
-        '200':
-          description: List of all operators
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Operator'
-  /op/{id}:
+  /operator/{id}:
     get:
       summary: Get operator by ID
-      operationId: getOp
+      operationId: GetOperator
       parameters:
         - name: id
           in: path
@@ -47,52 +34,12 @@ paths:
             type: integer
             format: int64
       responses:
-        '200':
+        "200":
           description: Operator found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Operator' 
-
-  /op/update/{id}:
-    put:
-      summary: Update operator availability
-      operationId: updateOpAvailability
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-            format: int64
-          required: true
-      requestBody:
-        content:
-          application/json:
-            schema:
-              properties:
-                isavaible:
-                  type: boolean
-      responses:
-        '204':
-          description: Operator updated
-        '400':
-          description: Invalid input
-  /op/delete/{id}:
-    delete:
-      summary: Delete operator by ID
-      operationId: deleteOp
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-            format: int64
-          required: true
-      responses:
-        '204':
-          description: Operator deleted
-        '404':
-          description: Operator not found
+                $ref: "#/components/schemas/Operator"
 components:
   schemas:
     Operator:
@@ -100,21 +47,14 @@ components:
       properties:
         id:
           type: integer
-          format: int64
-          minLength: 6
-          maxLength: 6
-        nameop:
-          type: string
-        surnameop:
-          type: string
-        numReq:
+        userId:
           type: integer
-          format: int32
-        isavaible:
-          type: boolean
+        surname:
+          type: string
+        name:
+          type: string
       required:
         - id
-        - nameop
-        - surnameop
-        - numReq
-        - isavaible
+        - name
+        - surname
+        - userId
