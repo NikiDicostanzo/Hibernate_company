@@ -18,33 +18,44 @@ import org.hibernate.service.ServiceRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.caribu.filiale.controller.ClientController;
 import com.caribu.filiale.controller.OperatorController;
+import com.caribu.filiale.model.Client;
 import com.caribu.filiale.model.Operator;
 import com.caribu.filiale.service.OperatorServiceImpl;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.JoinConfig;
 import com.hazelcast.config.NetworkConfig;
 import com.caribu.filiale.service.OperatorService;
+import com.caribu.filiale.service.ClientService;
+import com.caribu.filiale.service.ClientServiceImpl;
 
 import java.util.Properties;
 
 public class WebVerticle extends AbstractVerticle {
   private static final Logger LOG = LoggerFactory.getLogger(WebVerticle.class);
   private final OperatorService operatorService;
+  private final ClientService clientService;
+
   private OperatorController operatorController;
+  private ClientController clientController;
   public static final int HTTP_PORT = 10001;
 
-  public WebVerticle(OperatorService operatorService) {
-    this.operatorService = operatorService; 
+  public WebVerticle(OperatorService operatorService, ClientService clientService) {
+    this.operatorService = operatorService;
+    this.clientService = clientService; 
   }
 
   @Override
   public void start(Promise<Void> startPromise) throws Exception {
       operatorController = new OperatorController(operatorService);
+      clientController = new ClientController(clientService);
+
       RouterBuilder.create(vertx, "openapi.yml")
         .onSuccess(routerBuilder -> {
             routerBuilder.operation("AddOperator").handler(ctx -> operatorController.addOperator(ctx));
             routerBuilder.operation("GetOperator").handler(ctx -> operatorController.getOperatorById(ctx));
+            routerBuilder.operation("checkClient").handler(ctx -> clientController.getClientById(ctx));
 
             Router restApi = routerBuilder.createRouter();
 
@@ -76,6 +87,7 @@ public class WebVerticle extends AbstractVerticle {
     Configuration hibernateConfiguration = new Configuration();
     hibernateConfiguration.setProperties(hibernateProps);
     hibernateConfiguration.addAnnotatedClass(Operator.class);
+    hibernateConfiguration.addAnnotatedClass(Client.class);
 
     // 2. Session factroy
     ServiceRegistry serviceRegistry = new ReactiveServiceRegistryBuilder()
@@ -83,8 +95,9 @@ public class WebVerticle extends AbstractVerticle {
     Stage.SessionFactory sessionFactory = hibernateConfiguration
         .buildSessionFactory(serviceRegistry).unwrap(Stage.SessionFactory.class);
 
-    // 3. Project repository
+    // 3. service
     OperatorService operatorService = new OperatorServiceImpl(sessionFactory);
+    ClientService clientService = new ClientServiceImpl(sessionFactory);
 
 
     // Configure clustering
@@ -106,7 +119,7 @@ public class WebVerticle extends AbstractVerticle {
     Vertx
       .clusteredVertx(options, cluster -> {
        if (cluster.succeeded()) {
-           cluster.result().deployVerticle(new WebVerticle(operatorService), res -> {
+           cluster.result().deployVerticle(new WebVerticle(operatorService, clientService), res -> {
               if (res.succeeded()) {
                    System.out.println("Application is up and running");
                    LOG.info("Deployment id is: " + res.result());

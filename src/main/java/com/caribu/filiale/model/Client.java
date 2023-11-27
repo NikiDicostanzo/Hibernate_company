@@ -12,6 +12,18 @@ public class Client {
     private Integer clientId; 
     private String companyName;
 
+    /* @ManyToOne
+    @JoinColumn(name = "filialeId", nullable = true)
+    private Filiale filiale;
+
+    public Filiale getFiliale() {
+        return filiale;
+    }
+
+    public void setFiliale(Filiale filiale) {
+        this.filiale = filiale;
+    } */
+
     public Integer getClientId() {
         return clientId;
     }

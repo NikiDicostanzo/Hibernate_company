@@ -6,11 +6,11 @@ import java.util.Optional;
 
 public interface ClientService {
 
-  Future<ClientDTO> createClient (ClientDTO client);
+  Future<ClientDTO> addClient(ClientDTO client);
 
   // Future<Void> removeTask (Integer id);
 
-  Future<Optional<ClientDTO>> findClientById (Integer id);
+  Future<Optional<ClientDTO>> getClientBycompanyName(String companyName);
 
-  // Future<TasksList> findTasksByUser (Integer userId);
+  Future<Optional<ClientDTO>> findClientByCompany(String companyName);
 }

@@ -12,7 +12,7 @@ import javax.persistence.criteria.*;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
-public class ClientServiceImpl implements ClientService{
+public class ClientServiceImpl implements ClientService {
 
   private Stage.SessionFactory sessionFactory;
 
@@ -21,7 +21,7 @@ public class ClientServiceImpl implements ClientService{
   }
 
   @Override
-  public Future<ClientDTO> createClient(ClientDTO client) {
+  public Future<ClientDTO> addClient(ClientDTO client) {
     ClientEntityMapper entityMapper = new ClientEntityMapper();
     Client entity = entityMapper.apply(client);
     CompletionStage<Void> result = sessionFactory.withTransaction((s, t) -> s.persist(entity));
@@ -30,41 +30,31 @@ public class ClientServiceImpl implements ClientService{
     return future;
   }
 
-  // @Override
-  // public Future<Void> removeTask(Integer id) {
-  //   CriteriaBuilder criteriaBuilder = sessionFactory.getCriteriaBuilder();
-  //   CriteriaDelete<Task> criteriaDelete = criteriaBuilder.createCriteriaDelete(Task.class);
-  //   Root<Task> root = criteriaDelete.from(Task.class);
-  //   Predicate predicate = criteriaBuilder.equal(root.get("id"), id);
-  //   criteriaDelete.where(predicate);
-
-  //   CompletionStage<Integer> result = sessionFactory.withTransaction((s,t) -> s.createQuery(criteriaDelete).executeUpdate());
-  //   Future<Void> future = Future.fromCompletionStage(result).compose(r -> Future.succeededFuture());
-  //   return future;
-  // }
-
   @Override
-  public Future<Optional<ClientDTO>> findClientById(Integer id) {
+  public Future<Optional<ClientDTO>> getClientBycompanyName(String companyName) {
     ClientDTOMapper dtoMapper = new ClientDTOMapper();
-    CompletionStage<Client> result = sessionFactory.withTransaction((s,t) -> s.find(Client.class, id));
+    CompletionStage<Client> result = sessionFactory.withTransaction((s, t) -> s.find(Client.class, companyName));
     Future<Optional<ClientDTO>> future = Future.fromCompletionStage(result)
-      .map(r -> Optional.ofNullable(r))
-      .map(r -> r.map(dtoMapper));
+        .map(r -> Optional.ofNullable(r))
+        .map(r -> r.map(dtoMapper));
     return future;
   }
 
-  // @Override
-  // public Future<TasksList> findTasksByUser(Integer userId) {
-  //   TaskDTOMapper dtoMapper = new TaskDTOMapper();
-  //   CriteriaBuilder criteriaBuilder = sessionFactory.getCriteriaBuilder();
-  //   CriteriaQuery<Task> criteriaQuery = criteriaBuilder.createQuery(Task.class);
-  //   Root<Task> root = criteriaQuery.from(Task.class);
-  //   Predicate predicate = criteriaBuilder.equal(root.get("userId"), userId);
-  //   criteriaQuery.where(predicate);
-  //   CompletionStage<List<Task>> result = sessionFactory().withTransaction((s,t) -> s.createQuery(criteriaQuery).getResultList());
-  //   Future<TasksList> future = Future.fromCompletionStage(result)
-  //     .map(list -> list.stream().map(dtoMapper).collect(Collectors.toList()))
-  //     .map(list -> new TasksList(list));
-  //   return future;
-  // }
+  @Override
+  public Future<Optional<ClientDTO>> findClientByCompany(String companyName) {
+  ClientDTOMapper dtoMapper = new ClientDTOMapper();
+  CriteriaBuilder criteriaBuilder = sessionFactory.getCriteriaBuilder();
+  CriteriaQuery<Client> criteriaQuery = criteriaBuilder.createQuery(Client.class);
+  Root<Client> root = criteriaQuery.from(Client.class);
+  Predicate predicate = criteriaBuilder.equal(root.get("companyName"), companyName);
+  criteriaQuery.where(predicate);
+
+  CompletionStage<Client> result = sessionFactory.withTransaction((s,t)
+  -> s.createQuery(criteriaQuery).getSingleResult());
+  System.out.println("ccc" + result);
+  Future<Optional<ClientDTO>> future = Future.fromCompletionStage(result)
+        .map(r -> Optional.ofNullable(r))
+      .map(r -> r.map(dtoMapper));
+  return future;
+  }
 }

@@ -17,12 +17,12 @@ public class OperatorController {
     public void addOperator(RoutingContext context) {
         JsonObject json = context.body().asJsonObject();
 
-        Integer userId = Integer.parseInt((json.getString("userid")));
+        Integer operatorId = Integer.parseInt((json.getString("userid")));
         String name = (json.getString("name"));
         String surname = (json.getString("surname"));
         System.err.println("context: " + context.body().asJsonObject());
 
-        OperatorDTO operator = new OperatorDTO(null, userId, name, surname);
+        OperatorDTO operator = new OperatorDTO(null, operatorId, name, surname);
         operatorService.addOperator(operator)
             .onSuccess(result -> {
                 JsonObject responseBody = JsonObject.mapFrom(result);

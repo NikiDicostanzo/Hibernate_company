@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
-public class OperatorServiceImpl implements OperatorService {// TODO SERVICE
+public class OperatorServiceImpl implements OperatorService {
 
   private Stage.SessionFactory sessionFactory;
 
@@ -32,26 +32,7 @@ public class OperatorServiceImpl implements OperatorService {// TODO SERVICE
     Future<OperatorDTO> future = Future.fromCompletionStage(result).map(v -> dtoMapper.apply(entity));
     return future;
   }
-
-  // @Override
-  // public Future<TaskDTO> updateTask(TaskDTO task) {
-  // CriteriaBuilder criteriaBuilder = sessionFactory.getCriteriaBuilder();
-  // CriteriaUpdate<Task> criteriaUpdate =
-  // criteriaBuilder.createCriteriaUpdate(Task.class);
-  // Root<Task> root = criteriaUpdate.from(Task.class);
-  // Predicate predicate = criteriaBuilder.equal(root.get("id"), task.id());
-
-  // criteriaUpdate.set("content", task.content());
-  // criteriaUpdate.set("completed", task.completed());
-
-  // criteriaUpdate.where(predicate);
-
-  // CompletionStage<Integer> result = sessionFactory.withTransaction((s, t) ->
-  // s.createQuery(criteriaUpdate).executeUpdate());
-  // Future<TaskDTO> future = Future.fromCompletionStage(result).map(r -> task);
-  // return future;
-  // }
-
+  
   // @Override
   // public Future<Void> removeTask(Integer id) {
   // CriteriaBuilder criteriaBuilder = sessionFactory.getCriteriaBuilder();
