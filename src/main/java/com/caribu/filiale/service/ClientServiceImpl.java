@@ -42,19 +42,30 @@ public class ClientServiceImpl implements ClientService {
 
   @Override
   public Future<Optional<ClientDTO>> findClientByCompany(String companyName) {
-  ClientDTOMapper dtoMapper = new ClientDTOMapper();
-  CriteriaBuilder criteriaBuilder = sessionFactory.getCriteriaBuilder();
-  CriteriaQuery<Client> criteriaQuery = criteriaBuilder.createQuery(Client.class);
-  Root<Client> root = criteriaQuery.from(Client.class);
-  Predicate predicate = criteriaBuilder.equal(root.get("companyName"), companyName);
-  criteriaQuery.where(predicate);
+      ClientDTOMapper dtoMapper = new ClientDTOMapper();
+      CriteriaBuilder criteriaBuilder = sessionFactory.getCriteriaBuilder();
+      CriteriaQuery<Client> criteriaQuery = criteriaBuilder.createQuery(Client.class);
+      Root<Client> root = criteriaQuery.from(Client.class);
+      Predicate predicate = criteriaBuilder.equal(root.get("companyName"), companyName);
+      criteriaQuery.where(predicate);
 
-  CompletionStage<Client> result = sessionFactory.withTransaction((s,t)
-  -> s.createQuery(criteriaQuery).getSingleResult());
-  System.out.println("ccc" + result);
-  Future<Optional<ClientDTO>> future = Future.fromCompletionStage(result)
-        .map(r -> Optional.ofNullable(r))
-      .map(r -> r.map(dtoMapper));
-  return future;
+      CompletionStage<Client> result = sessionFactory.withTransaction((s,t)
+      -> s.createQuery(criteriaQuery).getSingleResult());
+      System.out.println("ccc" + result);
+      Future<Optional<ClientDTO>> future = Future.fromCompletionStage(result)
+            .map(r -> Optional.ofNullable(r))
+          .map(r -> r.map(dtoMapper));
+      return future;
+  }
+  //primo tentativo - edo
+  @Override
+  public Future<ClientDTO> addClientIfNotExistsByName(ClientDTO client) {
+    System.out.println("addClientIfNotExistsByName");
+    return getClientBycompanyName(client.getCompanyName())
+      .flatMap(clientOpt -> clientOpt
+        .map(Future::succeededFuture)
+        .orElseGet(() -> {
+          System.out.println("Here is the client" + client.toString());
+          return addClient(client);}));
   }
 }

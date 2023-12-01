@@ -13,4 +13,6 @@ public interface ClientService {
   Future<Optional<ClientDTO>> getClientBycompanyName(String companyName);
 
   Future<Optional<ClientDTO>> findClientByCompany(String companyName);
+
+  public Future<ClientDTO> addClientIfNotExistsByName(ClientDTO client);
 }
