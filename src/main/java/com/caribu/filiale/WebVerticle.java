@@ -9,6 +9,8 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.openapi.RouterBuilder;
 import io.vertx.ext.web.validation.ValidationHandler;
+import io.vertx.servicediscovery.ServiceDiscovery;
+import io.vertx.servicediscovery.types.HttpEndpoint;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 import org.hibernate.cfg.Configuration;
@@ -34,12 +36,13 @@ import java.util.Properties;
 
 public class WebVerticle extends AbstractVerticle {
   private static final Logger LOG = LoggerFactory.getLogger(WebVerticle.class);
+  private ServiceDiscovery discovery;
   private final OperatorService operatorService;
   private final ClientService clientService;
 
   private OperatorController operatorController;
   private ClientController clientController;
-  public static final int HTTP_PORT = 10001;
+  public static final int HTTP_PORT = 10005;
 
   public WebVerticle(OperatorService operatorService, ClientService clientService) {
     this.operatorService = operatorService;
@@ -48,6 +51,7 @@ public class WebVerticle extends AbstractVerticle {
 
   @Override
   public void start(Promise<Void> startPromise) throws Exception {
+      discovery = ServiceDiscovery.create(vertx);
       operatorController = new OperatorController(operatorService);
       clientController = new ClientController(clientService);
 
@@ -59,18 +63,41 @@ public class WebVerticle extends AbstractVerticle {
 
             Router restApi = routerBuilder.createRouter();
 
-          // Create HTTP server and attach routes
             vertx.createHttpServer()
-              .requestHandler(restApi)
-              .listen(HTTP_PORT, ar -> {
-                if (ar.succeeded()) {
-                  LOG.info("HTTP server running on port {}", HTTP_PORT);
-                  startPromise.complete();
-                } else {
-                  LOG.error("Could not start a HTTP server", ar.cause());
-                  startPromise.fail(ar.cause());
-                }
-              });
+                    .requestHandler(restApi)
+                    .listen(HTTP_PORT, http -> {
+                        if(http.succeeded()) {
+                            discovery.publish(
+                                HttpEndpoint.createRecord("filialeapi", "127.0.0.1", HTTP_PORT, "/"),
+                                ar -> {
+                                if (ar.succeeded()) {
+                                    startPromise.complete();
+                                    LOG.info("HTTP server started on port {}",HTTP_PORT);
+                                    //LOG.info("Service published on port 8303");
+                                } else {
+                                    startPromise.fail(ar.cause());
+                                }
+                                }
+                            );
+                            LOG.info("HTTP server running on port {}", HTTP_PORT);
+                            //startPromise.complete();
+                        } else {
+                            LOG.error("Could not start a HTTP server", http.cause());
+                            startPromise.fail(http.cause());
+                        }
+                    });
+            //Create HTTP server and attach routes
+            // vertx.createHttpServer()
+            //   .requestHandler(restApi)
+            //   .listen(HTTP_PORT, ar -> {
+            //     if (ar.succeeded()) {
+            //       LOG.info("HTTP server running on port {}", HTTP_PORT);
+            //       startPromise.complete();
+            //     } else {
+            //       LOG.error("Could not start a HTTP server", ar.cause());
+            //       startPromise.fail(ar.cause());
+            //     }
+            //   });
           });
         
   }
