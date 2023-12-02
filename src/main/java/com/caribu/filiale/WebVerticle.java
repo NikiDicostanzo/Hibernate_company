@@ -1,17 +1,6 @@
 package com.caribu.filiale;
 
-import io.vertx.core.*;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.spi.cluster.ClusterManager;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.ext.web.openapi.RouterBuilder;
-import io.vertx.ext.web.validation.ValidationHandler;
-import io.vertx.servicediscovery.ServiceDiscovery;
-import io.vertx.servicediscovery.types.HttpEndpoint;
-import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
+import java.util.Properties;
 
 import org.hibernate.cfg.Configuration;
 import org.hibernate.reactive.provider.ReactiveServiceRegistryBuilder;
@@ -21,30 +10,41 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.caribu.filiale.controller.ClientController;
-import com.caribu.filiale.controller.OperatorController;
+import com.caribu.filiale.controller.FilialeController;
 import com.caribu.filiale.model.Client;
 import com.caribu.filiale.model.Operator;
-import com.caribu.filiale.service.OperatorServiceImpl;
+import com.caribu.filiale.service.ClientService;
+import com.caribu.filiale.service.ClientServiceImpl;
+import com.caribu.filiale.service.FilialeService;
+import com.caribu.filiale.service.FilialeServiceImpl;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.JoinConfig;
 import com.hazelcast.config.NetworkConfig;
-import com.caribu.filiale.service.OperatorService;
-import com.caribu.filiale.service.ClientService;
-import com.caribu.filiale.service.ClientServiceImpl;
 
-import java.util.Properties;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.spi.cluster.ClusterManager;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.openapi.RouterBuilder;
+import io.vertx.servicediscovery.ServiceDiscovery;
+import io.vertx.servicediscovery.types.HttpEndpoint;
+import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 public class WebVerticle extends AbstractVerticle {
   private static final Logger LOG = LoggerFactory.getLogger(WebVerticle.class);
   private ServiceDiscovery discovery;
-  private final OperatorService operatorService;
+  private final FilialeService operatorService;
   private final ClientService clientService;
 
-  private OperatorController operatorController;
+  private FilialeController operatorController;
   private ClientController clientController;
   public static final int HTTP_PORT = 10005;
 
-  public WebVerticle(OperatorService operatorService, ClientService clientService) {
+  public WebVerticle(FilialeService operatorService, ClientService clientService) {
     this.operatorService = operatorService;
     this.clientService = clientService; 
   }
@@ -52,14 +52,16 @@ public class WebVerticle extends AbstractVerticle {
   @Override
   public void start(Promise<Void> startPromise) throws Exception {
       discovery = ServiceDiscovery.create(vertx);
-      operatorController = new OperatorController(operatorService);
+      operatorController = new FilialeController(operatorService);
       clientController = new ClientController(clientService);
 
       RouterBuilder.create(vertx, "openapi.yml")
         .onSuccess(routerBuilder -> {
             routerBuilder.operation("AddOperator").handler(ctx -> operatorController.addOperator(ctx));
             routerBuilder.operation("GetOperator").handler(ctx -> operatorController.getOperatorById(ctx));
-            routerBuilder.operation("checkClient").handler(ctx -> clientController.getClientById(ctx));
+            //routerBuilder.operation("GetClient").handler(ctx -> clientController.getClientById(ctx));
+            routerBuilder.operation("checkClient").handler(ctx -> clientController.addClientIfNotExistsByName(ctx));
+
 
             Router restApi = routerBuilder.createRouter();
 
@@ -86,18 +88,6 @@ public class WebVerticle extends AbstractVerticle {
                             startPromise.fail(http.cause());
                         }
                     });
-            //Create HTTP server and attach routes
-            // vertx.createHttpServer()
-            //   .requestHandler(restApi)
-            //   .listen(HTTP_PORT, ar -> {
-            //     if (ar.succeeded()) {
-            //       LOG.info("HTTP server running on port {}", HTTP_PORT);
-            //       startPromise.complete();
-            //     } else {
-            //       LOG.error("Could not start a HTTP server", ar.cause());
-            //       startPromise.fail(ar.cause());
-            //     }
-            //   });
           });
         
   }
@@ -123,7 +113,7 @@ public class WebVerticle extends AbstractVerticle {
         .buildSessionFactory(serviceRegistry).unwrap(Stage.SessionFactory.class);
 
     // 3. service
-    OperatorService operatorService = new OperatorServiceImpl(sessionFactory);
+    FilialeService operatorService = new FilialeServiceImpl(sessionFactory);
     ClientService clientService = new ClientServiceImpl(sessionFactory);
 
 

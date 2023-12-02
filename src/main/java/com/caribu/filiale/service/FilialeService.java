@@ -1,16 +1,14 @@
 package com.caribu.filiale.service;
 
-import io.vertx.core.Future;
-import com.caribu.filiale.model.FilialeDTO;
 import java.util.Optional;
+
+import com.caribu.filiale.model.OperatorDTO;
+
+import io.vertx.core.Future;
 
 public interface FilialeService {
 
-  Future<FilialeDTO> createFiliale (FilialeDTO filiale);
+  Future<OperatorDTO> addOperator(OperatorDTO operator);
+  Future<Optional<OperatorDTO>> getOperatorById(Integer id);
 
-  // Future<Void> removeTask (Integer id);
-
-  Future<Optional<FilialeDTO>> findFilialeById (Integer id);
-
-  // Future<TasksList> findTasksByUser (Integer userId);
 }

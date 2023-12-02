@@ -1,18 +1,23 @@
 package com.caribu.filiale.model;
 
+import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
+
+@Entity
+@Table(name = "filiale")
 public class Filiale {
     private String filialeName;
-/* 
+
     @OneToMany
     @JoinColumn(name = "operatorId")
     private Operator operator;
 
-    @OneToMany
-    @JoinColumn(name = "supplierId")
-    private Supplier supplier;
+    //@OneToMany
+   // @JoinColumn(name = "supplierId")
+   // private Supplier supplier;
 
     @OneToMany
     @JoinColumn(name = "clientId")
@@ -48,7 +53,7 @@ public class Filiale {
 
     public void setClient(Client client) {
         this.client = client;
-    } */
+    }
 
     public String getFilialeName() {
         return filialeName;

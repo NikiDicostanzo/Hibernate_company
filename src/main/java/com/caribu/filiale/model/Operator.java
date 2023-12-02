@@ -1,6 +1,9 @@
 package com.caribu.filiale.model;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "operator")
@@ -9,27 +12,17 @@ public class Operator {
     @Id
     @GeneratedValue
     private Integer id;
-    private Integer userId;
+    private Integer operatorId;
     private String name;
     private String surname;
 
-    // @ManyToOne
-    // @JoinColumn(name = "filialeId", nullable = true)
-    // private Filiale filiale;
 
-    // public Filiale getFiliale() {
-    // return filiale;
-    // }
-    // public void setFiliale(Filiale filiale) {
-    // this.filiale = filiale;
-    // }
-
-    public Integer getUserId() {
-        return userId;
+    public Integer getOperatorId() {
+        return operatorId;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setOperatorId(Integer userId) {
+        this.operatorId = userId;
     }
 
     public Integer getId() {

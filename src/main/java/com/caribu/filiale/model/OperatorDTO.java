@@ -1,37 +1,23 @@
 package com.caribu.filiale.model;
 
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-
 public class OperatorDTO {
     private Integer id;
-    private Integer userId;
+    private Integer operatorId;
     private String name;
     private String surname;
 
-    // @ManyToOne
-    // @JoinColumn(name = "filialeId", nullable = true)
-    // private Filiale filiale;
 
-    // public Filiale getFiliale() {
-    //     return filiale;
-    // }
-
-    // public void setFiliale(Filiale filiale) {
-    //     this.filiale = filiale;
-    // }
-
-    public Integer getUserId() {
-        return userId;
+    public Integer getOperatorId() {
+        return operatorId;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setOperatorId(Integer userId) {
+        this.operatorId = userId;
     }
 
     public OperatorDTO(Integer id, Integer operatorId, String name, String surname) {
         this.id = id;
-        this.userId = operatorId;
+        this.operatorId = operatorId;
         this.name = name;
         this.surname = surname;
     }

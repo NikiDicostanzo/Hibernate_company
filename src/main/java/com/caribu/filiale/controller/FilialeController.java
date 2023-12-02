@@ -1,16 +1,16 @@
 package com.caribu.filiale.controller;
 
 import com.caribu.filiale.model.OperatorDTO;
-import com.caribu.filiale.service.OperatorService;
+import com.caribu.filiale.service.FilialeService;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
 
-public class OperatorController {
-    private OperatorService operatorService;
+public class FilialeController {
+    private FilialeService operatorService;
 
-    public OperatorController(OperatorService operatorService) {
+    public FilialeController(FilialeService operatorService) {
         this.operatorService = operatorService;
     }
 
@@ -30,7 +30,7 @@ public class OperatorController {
             })
             .onFailure(err -> {
                 context.response().setStatusCode(500).end();
-                System.out.println("Error");
+                //System.out.println("Error");
             });
     }
 

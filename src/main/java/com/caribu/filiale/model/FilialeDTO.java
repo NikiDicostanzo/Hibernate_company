@@ -6,8 +6,6 @@ import javax.persistence.OneToMany;
 public class FilialeDTO {
     private String filialeName;
     
-    /* Integer id;
-    
     @OneToMany
     @JoinColumn(name = "operatorId")
     private Operator operator;
@@ -16,11 +14,10 @@ public class FilialeDTO {
     @JoinColumn(name = "clientId")
     private Client client;
     
-    public FilialeDTO(Integer id, String filialeName, Operator operator, Supplier supplier, Client client) {
-        this.id = id;
+    public FilialeDTO(String filialeName, Operator operator, Client client) { //Supplier supplier, 
         this.filialeName = filialeName;
         this.operator = operator;
-        this.supplier = supplier;
+        //this.supplier = supplier;
         this.client = client;
     }
     
@@ -55,7 +52,7 @@ public class FilialeDTO {
     public void setClient(Client client) {
         this.client = client;
     }
-    */
+   
     public String getFilialeName() {
         return filialeName;
     }

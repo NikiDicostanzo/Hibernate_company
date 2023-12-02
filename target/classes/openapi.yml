@@ -40,9 +40,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Operator"
-  /client/{companyName}:
+  /clientid/{companyName}:
     get:
-      summary: Get client by companyName
+      summary: Get client id by companyName if exists, creates otherwise and returns the new id
       operationId: checkClient
       parameters:
         - name: companyName

@@ -1,16 +1,22 @@
 package com.caribu.filiale.service;
 
-import io.vertx.core.Future;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletionStage;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+
 import org.hibernate.reactive.stage.Stage;
 
-import com.caribu.filiale.data.ClientEntityMapper;
 import com.caribu.filiale.data.ClientDTOMapper;
+import com.caribu.filiale.data.ClientEntityMapper;
 import com.caribu.filiale.model.Client;
 import com.caribu.filiale.model.ClientDTO;
 
-import javax.persistence.criteria.*;
-import java.util.Optional;
-import java.util.concurrent.CompletionStage;
+import io.vertx.core.Future;
 
 public class ClientServiceImpl implements ClientService {
 
@@ -22,6 +28,7 @@ public class ClientServiceImpl implements ClientService {
 
   @Override
   public Future<ClientDTO> addClient(ClientDTO client) {
+    System.out.println("New client");
     ClientEntityMapper entityMapper = new ClientEntityMapper();
     Client entity = entityMapper.apply(client);
     CompletionStage<Void> result = sessionFactory.withTransaction((s, t) -> s.persist(entity));
@@ -31,9 +38,9 @@ public class ClientServiceImpl implements ClientService {
   }
 
   @Override
-  public Future<Optional<ClientDTO>> getClientBycompanyName(String companyName) {
+  public Future<Optional<ClientDTO>> getClientById(Integer id) {
     ClientDTOMapper dtoMapper = new ClientDTOMapper();
-    CompletionStage<Client> result = sessionFactory.withTransaction((s, t) -> s.find(Client.class, companyName));
+    CompletionStage<Client> result = sessionFactory.withTransaction((s, t) -> s.find(Client.class, id));
     Future<Optional<ClientDTO>> future = Future.fromCompletionStage(result)
         .map(r -> Optional.ofNullable(r))
         .map(r -> r.map(dtoMapper));
@@ -49,23 +56,23 @@ public class ClientServiceImpl implements ClientService {
       Predicate predicate = criteriaBuilder.equal(root.get("companyName"), companyName);
       criteriaQuery.where(predicate);
 
-      CompletionStage<Client> result = sessionFactory.withTransaction((s,t)
-      -> s.createQuery(criteriaQuery).getSingleResult());
-      System.out.println("ccc" + result);
+      // Se il cliente non esiste GetSingleResult() lancerà una NoResultException -> eccezione non rilevata dal metodo orElseGet{} => getResultList
+      CompletionStage<List<Client>> result = sessionFactory.withTransaction((s,t)
+      -> s.createQuery(criteriaQuery).getResultList());  
       Future<Optional<ClientDTO>> future = Future.fromCompletionStage(result)
-            .map(r -> Optional.ofNullable(r))
-          .map(r -> r.map(dtoMapper));
+      .map(r -> r.stream().findFirst())
+      .map(r -> r.map(dtoMapper));      
       return future;
   }
-  //primo tentativo - edo
+
+
   @Override
-  public Future<ClientDTO> addClientIfNotExistsByName(ClientDTO client) {
-    System.out.println("addClientIfNotExistsByName");
-    return getClientBycompanyName(client.getCompanyName())
-      .flatMap(clientOpt -> clientOpt
-        .map(Future::succeededFuture)
-        .orElseGet(() -> {
-          System.out.println("Here is the client" + client.toString());
-          return addClient(client);}));
+  public Future<ClientDTO> addClientIfNotExistsByName(String companyName) {
+    return findClientByCompany(companyName)//client.getCompanyName())
+           .flatMap(clientOpt -> clientOpt
+                      .map(Future::succeededFuture)
+                      .orElseGet(() -> {
+                          ClientDTO client = new ClientDTO(null, 1111, companyName); 
+                          return addClient(client);}));
   }
 }
