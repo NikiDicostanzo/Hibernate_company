@@ -1,7 +1,6 @@
 # Caribù project 
-This repo contains microservice "Filiale"
 
-= Filiale
+This repo contains microservice "Filiale"
 
 image:https://img.shields.io/badge/vert.x-4.4.1-purple.svg[link="https://vertx.io"]
 
