@@ -62,8 +62,6 @@ components:
     Operator:
       type: object
       properties:
-        id:
-          type: integer
         operatorId:
           type: integer
         surname:
@@ -71,10 +69,9 @@ components:
         name:
           type: string
       required:
-        - id
         - name
         - surname
-        - userId
+        - operatorId
     Client:
       type: object
       properties:

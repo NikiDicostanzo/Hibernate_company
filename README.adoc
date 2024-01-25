@@ -33,9 +33,3 @@ docker run --name my-postgres -e POSTGRES_PASSWORD=secret -e POSTGRES_DB=hib -p 
 * https://groups.google.com/forum/?fromgroups#!forum/vertx[Vert.x User Group]
 * https://discord.gg/6ry7aqPWXy[Vert.x Discord]
 * https://gitter.im/eclipse-vertx/vertx-users[Vert.x Gitter]
-
-
-docker pull quay.io/testcontainers/ryuk:0.2.2
-
-- Un endpoint che mi restituisce l'id dell'operativo, se io fornisco l'email dell'operativo (ovviamente email farlocca)
-- un endpoint che fa la stessa cosa ma per il cliente
