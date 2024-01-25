@@ -11,7 +11,7 @@ public class Operator {
 
     @Id
     @GeneratedValue
-    private Integer id;
+    private Integer id;  // UUID
     private Integer operatorId;
     private String name;
     private String surname;

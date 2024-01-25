@@ -22,6 +22,7 @@ public class FilialeServiceImpl implements FilialeService {
 
   @Override
   public Future<OperatorDTO> addOperator(OperatorDTO operator) {
+    System.err.println("New operator: " + operator);
     OperatorEntityMapper entityMapper = new OperatorEntityMapper();
     Operator entity = entityMapper.apply(operator);
     CompletionStage<Void> result = sessionFactory.withTransaction((s, t) -> s.persist(entity));
