@@ -2,6 +2,10 @@
 
 This repo contains microservice "Filiale"
 
+Statement di code availability:
+API Gateway, micro servizio “Preventivo”: https://github.com/wedrid/caribu 
+Micro servizio “Richiesta”: https://github.com/wedrid/richiesta_orm/ 
+
 image:https://img.shields.io/badge/vert.x-4.4.1-purple.svg[link="https://vertx.io"]
 
 This application was generated using http://start.vertx.io
